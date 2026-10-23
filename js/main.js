@@ -20,6 +20,6 @@ tl.to(statue.rotation, {
 
 // Micro-deslocamento vertical sutil para dar sensação de flutuação/profundidade
 .to(statue.position, {
-  y: 0.1, // Sobe levemente ao longo da página
+  y: 0.5, // Sobe levemente ao longo da página
   ease: 'none'
 }, 0);

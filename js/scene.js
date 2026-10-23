@@ -57,6 +57,30 @@ manager.onLoad = () => {
   }, 400);
 };
 
+// --- FUNÇÃO DE RESPONSIVIDADE E DIMENSÕES ---
+function resizeScene() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
+  // Atualiza proporção da câmera e renderizador
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  // Ajuste inteligente para Mobile vs Desktop
+  if (width <= 768) {
+    // No celular, centraliza um pouco mais e afasta o zoom (z maior) para caber na tela vertical
+    statue.position.x = 0.1; 
+    statue.position.z = 3; 
+  } else {
+    // No desktop, mantém na direita e mais próxima
+    statue.position.x = 0.5;
+    statue.position.y = -0.4;
+    statue.position.z = 4.2; 
+  }
+}
+
 // Carregar o modelo passando o manager
 new GLTFLoader(manager).load(
   'assets/models/justica/scene.gltf',
@@ -83,32 +107,13 @@ new GLTFLoader(manager).load(
     model.position.sub(center);
 
     statue.add(model);
-    statue.position.x = 0.5;
-    statue.position.y = -0.4;
-    statue.position.z = 4.2;
+    
+    // Aplica o dimensionamento correto logo após o modelo carregar
+    resizeScene();
   },
   undefined,
   (error) => console.error('Erro ao carregar o modelo:', error)
 );
-
-// Exemplo opcional para afastar/ajustar a estátua em telas menores no scene.js:
-const mediaQuery = window.matchMedia('(max-width: 768px)');
-
-function handleTabletChange(e) {
-  if (e.matches) {
-    // No mobile, joga a estátua um pouco mais para o fundo ou centraliza com opacidade reduzida
-    statue.position.x = 0; 
-    statue.position.z = 3.5;
-    if (renderer) renderer.toneMappingExposure = 0.3; // Deixa mais sutil para não brigar com o texto
-  } else {
-    statue.position.x = 0.9;
-    statue.position.z = 4.2;
-    if (renderer) renderer.toneMappingExposure = 0.5;
-  }
-}
-
-mediaQuery.addListener(handleTabletChange);
-handleTabletChange(mediaQuery);
 
 function animate() {
   renderer.render(scene, camera);
@@ -116,10 +121,8 @@ function animate() {
 }
 animate();
 
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
+// Ouve tanto o resize quanto o carregamento completo da janela para garantir precisão no mobile
+window.addEventListener('resize', resizeScene);
+window.addEventListener('load', resizeScene);
 
 export { statue, camera };
